@@ -11,7 +11,7 @@ double Div(double a, double b)
 {
     if (b == 0)
     {
-        printf("На ноль делить нельзя");
+        printf("Ошибка!! На ноль делить нельзя\n");
         exit(EXIT_FAILURE);
     }
     return a / b;
@@ -50,11 +50,63 @@ typedef struct
 } Operation;
 
 int main(void)
-{  
-        Operation op[] = {
-            {"Сложение", Sum}, {"Вычитание", Sub}, {"Деление", Div}, {"Умножение", Mult}, };
-        for (int i = 0; i < sizeof(op) / sizeof(op[0]); i++)
-            printf("%d. %s\n", i + 1, op[i].name);
-        printf("%lf", Calculate(op[2].func, 2, (double)3, (double)6));
-     return 0;
+{
+    Operation operation[] = {
+        {"Сложение", Sum},
+        {"Вычитание", Sub},
+        {"Деление", Div},
+        {"Умножение", Mult},
+    };
+    int amount = 0;
+    int choice = 0;
+    for (;;)
+    {
+        printf("\n");
+        for (int i = 0; i < sizeof(operation) / sizeof(*operation); i++)
+            printf("%d. %s\n", i + 1, operation[i].name);
+        printf("--------------------------\n");
+        printf("10. Выйти из программы\n");
+        printf("Выберите операцию: ");
+        scanf("%d", &choice);
+        if (choice == 10)
+            break;
+        printf("Введите количество цифр (1-8)\n");
+        scanf("%d", &amount);
+        double numbers[amount];
+        for (int i = 0; i < amount; i++){
+            printf("Цифра %d: ", i+1);
+            scanf("%lf", &numbers[i]);
+        }
+        switch (amount)
+        {
+        case 1:
+            printf("%.2lf", Calculate(operation[choice - 1].func, amount, numbers[0]));
+            break;
+        case 2:
+            printf("%.2lf", Calculate(operation[choice - 1].func, amount, numbers[0], numbers[1]));
+            break;
+        case 3:
+            printf("%.2lf", Calculate(operation[choice - 1].func, amount, numbers[0], numbers[1], numbers[2]));
+            break;
+        case 4:
+            printf("%.2lf", Calculate(operation[choice - 1].func, amount, numbers[0], numbers[1], numbers[2], numbers[3]));
+            break;
+        case 5:
+            printf("%.2lf", Calculate(operation[choice - 1].func, amount, numbers[0], numbers[1], numbers[2], numbers[3], numbers[4]));
+            break;
+        case 6:
+            printf("%.2lf", Calculate(operation[choice - 1].func, amount, numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5]));
+            break;
+        case 7:
+            printf("%.2lf", Calculate(operation[choice - 1].func, amount, numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5], numbers[6]));
+            break;
+        case 8:
+            printf("%.2lf", Calculate(operation[choice - 1].func, amount, numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5], numbers[6], numbers[7]));
+            break;
+        default:
+            printf("Ошибка! Максимальное количество цифр 8");
+            break;
+        }
+    }
+    return 0;
 }
