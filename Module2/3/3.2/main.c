@@ -40,16 +40,24 @@ int Start(char *ip_gateway, char *ip_mask, int numbers_packet)
     return counter;
 }
 
+int IsValidAddress(const char *ip) {
+    int num;
+    int octets = sscanf(ip, "%d.%d.%d.%d", &num, &num, &num, &num);
+    return (octets == 4);
+}
 
 int main(int argc, char *argv[])
 {
     srand(time(NULL));
     if (argc != 4)
     {
-        printf("Не правильно введены аргументы, введите <IP_адресс> <маска> <количество пакетов>\n");
+        printf("Не правильно введены аргументы, введите <IP_адрес> <маска подсети> <количество пакетов>\n");
         return 1;
     }
-   
+     if (!IsValidAddress(argv[1]) || !IsValidAddress(argv[2])) {
+        printf("Ошибка! Неверно введен IP или маска подсети\n");
+        return 1;
+    }
     int numbers_package = strtoul(argv[3], NULL, 10);
     if (numbers_package != 0)
     {
@@ -59,6 +67,9 @@ int main(int argc, char *argv[])
         printf("Количество адресов других сетей: %d\n", different_subnet_count);
         printf("Процентов: %.1f \% \n", (float)same_subnet_count *100 / numbers_package);
     }
-
+    else{
+        printf("Ошибка! Неверное количество пакетов");
+        return 1;
+    }
     return 0;
 }
