@@ -6,6 +6,8 @@
 
 #define MAX_LENGTH 50
 
+
+
 mode_t UpdateMode(mode_t currentMode, char *target, char operation, char *action)
 {
     mode_t objectMask = 0;
@@ -69,12 +71,38 @@ mode_t UpdateMode(mode_t currentMode, char *target, char operation, char *action
     return currentMode;
 }
 
+void PrintModeBinary(mode_t mode){
+    printf("Битовое представление:");
+    for (int i = 8; i >= 0; i--)
+        printf("%u", (mode >> i) & 1);
+    printf("\n");
+}
+
+void PrintModeLetters(mode_t mode){
+    printf("Буквенное представление:");
+    printf((mode & S_IRUSR) ? "r" : "-");
+    printf((mode & S_IWUSR) ? "w" : "-");
+    printf((mode & S_IXUSR) ? "x" : "-");
+    printf((mode & S_IRGRP) ? "r" : "-");
+    printf((mode & S_IWGRP) ? "w" : "-");
+    printf((mode & S_IXGRP) ? "x" : "-");
+    printf((mode & S_IROTH) ? "r" : "-");
+    printf((mode & S_IWOTH) ? "w" : "-");
+    printf((mode & S_IXOTH) ? "x" : "-");
+    printf("\n");
+}
+
+void PrintModeNumbers(mode_t mode){
+    printf("Цифровое представление: %o\n", mode & 0777);
+}
+
 
 
 
 
 int main()
 {
+    void (*Print[3]) (mode_t)={PrintModeBinary,PrintModeLetters,PrintModeNumbers};
     struct stat statFile;
     char filename[MAX_LENGTH];
     return EXIT_SUCCESS;
