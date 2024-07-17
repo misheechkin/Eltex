@@ -174,13 +174,13 @@ int main()
             break;
         case 5:
             if (strlen(filename) != 0)
-                changemod(&fileStat.st_mode);
+                change_mode(&fileStat.st_mode);
             else
                 puts("Ошибка! Вы не ввели имя файла");
             break;
         case 6:
             if (strlen(access_rights) != 0)
-                changemod(&currentMode);
+                change_mode(&currentMode);
             else
                 puts("Ошибка! Вы не ввели права доступа");
             break;
