@@ -143,6 +143,53 @@ int main()
     char filename[MAX_STRING_LENGTH]={0}, access_rights[MAX_STRING_LENGTH]={0};
     void (*print[3])(mode_t) = {print_mode_binary, print_mode_letters, print_mode_numbers};
     mode_t currentMode = 0;
-   
+    for (;;) {
+        printf("Выберите действие:\n1 - Ввести путь к файлу\n2 - Вывести права доступа файла\n3 - Ввести права доступа в цифровоми или буквенном представлении\n4 - Вывести битовое представление прав доступа\n5 - Изменить права доступа в файле\n6 - Изменить введеные права доступа\n7 - Выйти из программы\n");
+        int choice;
+        scanf("%d", &choice);
+        switch (choice) {
+        case 1:
+            input(filename);
+            if (stat(filename, &fileStat) == -1)
+                puts("Не удалось открыть файл");
+            break;
+        case 2:
+            if (strlen(filename) != 0) {
+                printf("--------------------------------------------------\n");
+                for (int i = 0; i < sizeof(print) / sizeof(*print); i++)
+                    print[i](fileStat.st_mode);
+                printf("--------------------------------------------------\n");
+            } else {
+                puts("Ошибка! Вы не ввели имя файла");
+            }
+            break;
+        case 3:
+            input(access_rights);
+            currentMode = convert_to_mode(access_rights);
+            break;
+        case 4:
+            printf("--------------------------------------------------\n");
+            print[0](currentMode);
+            printf("--------------------------------------------------\n");
+            break;
+        case 5:
+            if (strlen(filename) != 0)
+                changemod(&fileStat.st_mode);
+            else
+                puts("Ошибка! Вы не ввели имя файла");
+            break;
+        case 6:
+            if (strlen(access_rights) != 0)
+                changemod(&currentMode);
+            else
+                puts("Ошибка! Вы не ввели права доступа");
+            break;
+        case 7:
+            return EXIT_SUCCESS;
+            break;
+        default:
+            printf("Неверный выбор. Попробуйте снова.\n");
+        }
+    }
     return EXIT_SUCCESS;
 }
