@@ -4,16 +4,13 @@
 #include <sys/types.h>
 #include <string.h>
 
-#define MAX_LENGTH 50
+#define MAX_STRING_LENGTH 32
 
-
-
-mode_t UpdateMode(mode_t currentMode, char *target, char operation, char *action)
+mode_t update_mode(mode_t currentMode, char *target, char operation, char *action)
 {
     mode_t objectMask = 0;
     mode_t mask = 0;
-    for (int i = 0; target[i] != 0; i++)
-    {
+    for (int i = 0; target[i] != 0; i++) {
         if (target[i] == 'a' || target[i] == 'u')
             objectMask |= (S_IRUSR | S_IWUSR | S_IXUSR);
         if (target[i] == 'a' || target[i] == 'g')
@@ -22,8 +19,7 @@ mode_t UpdateMode(mode_t currentMode, char *target, char operation, char *action
             objectMask |= (S_IROTH | S_IWOTH | S_IXOTH);
     }
     for (int i = 0; action[i] != 0; i++)
-        switch (action[i])
-        {
+        switch (action[i]) {
         case 'r':
             mask |= objectMask & (S_IRUSR | S_IRGRP | S_IROTH);
             break;
@@ -39,8 +35,7 @@ mode_t UpdateMode(mode_t currentMode, char *target, char operation, char *action
             break;
         }
 
-    switch (operation)
-    {
+    switch (operation) {
     case '+':
         currentMode |= mask;
         break;
@@ -48,12 +43,10 @@ mode_t UpdateMode(mode_t currentMode, char *target, char operation, char *action
         currentMode &= ~mask;
         break;
     case '=':
-        for (int i = 0; target[i] != 0; i++)
-        {
+        for (int i = 0; target[i] != 0; i++) {
             if (target[i] == 'a')
                 currentMode = (currentMode & ~0777) | mask;
-            else
-            {
+            else {
                 if (target[i] == 'u')
                     currentMode = (currentMode & ~0700) | (mask & 0700);
                 if (target[i] == 'g')
@@ -71,15 +64,17 @@ mode_t UpdateMode(mode_t currentMode, char *target, char operation, char *action
     return currentMode;
 }
 
-void PrintModeBinary(mode_t mode){
-    printf("Битовое представление:");
+void print_mode_binary(mode_t mode)
+{
+    printf("Битовое представление: ");
     for (int i = 8; i >= 0; i--)
         printf("%u", (mode >> i) & 1);
     printf("\n");
 }
 
-void PrintModeLetters(mode_t mode){
-    printf("Буквенное представление:");
+void print_mode_letters(mode_t mode)
+{
+    printf("Буквенное представление: ");
     printf((mode & S_IRUSR) ? "r" : "-");
     printf((mode & S_IWUSR) ? "w" : "-");
     printf((mode & S_IXUSR) ? "x" : "-");
@@ -92,18 +87,62 @@ void PrintModeLetters(mode_t mode){
     printf("\n");
 }
 
-void PrintModeNumbers(mode_t mode){
+void print_mode_numbers(mode_t mode)
+{
     printf("Цифровое представление: %o\n", mode & 0777);
 }
 
+mode_t convert_to_mode(char *string)
+{
+    mode_t mode = strtoul(string, NULL, 8);
+    if (!mode) {
+        if (strlen(string) > 9) {
+            printf("Вы ввели слишком много прав доступа");
+            exit(EXIT_FAILURE);
+        }
+        int j = 0;
+        for (int i = 0; string[i] != 0; i++) {
+            if (string[i] == 'r')
+                mode |= 0400 >> j;
+            if (string[i] == 'w')
+                mode |= 0200 >> j;
+            if (string[i] == 'x')
+                mode |= 0100 >> j;
+            if (i == 2 || i == 5)
+                j += 3;
+        }
+    }
+    return mode;
+}
 
+int input(char *string)
+{
+    getchar();
+    printf("Введите: ");
+    if (fgets(string, MAX_STRING_LENGTH, stdin) != NULL) {
+        if (string[strlen(string) - 1] == '\n')
+            string[strlen(string) - 1] = '\0';
+        return EXIT_SUCCESS;
+    }
+    return EXIT_FAILURE;
+}
 
+void change_mode(mode_t *mode)
+{
+    char access_rights[MAX_STRING_LENGTH], temp[MAX_STRING_LENGTH], action[MAX_STRING_LENGTH], target[MAX_STRING_LENGTH];
+    char operation;
+    input(temp);
+    sscanf(temp, "%s %c %s", target, &operation, action);
+    *mode = update_mode(*mode, target, operation, action);
+}
 
 
 int main()
 {
-    void (*Print[3]) (mode_t)={PrintModeBinary,PrintModeLetters,PrintModeNumbers};
-    struct stat statFile;
-    char filename[MAX_LENGTH];
+    struct stat fileStat;
+    char filename[MAX_STRING_LENGTH]={0}, access_rights[MAX_STRING_LENGTH]={0};
+    void (*print[3])(mode_t) = {print_mode_binary, print_mode_letters, print_mode_numbers};
+    mode_t currentMode = 0;
+   
     return EXIT_SUCCESS;
 }
