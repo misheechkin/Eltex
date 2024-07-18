@@ -15,7 +15,7 @@ void work_info_init(WorkInfo *work_info, char *workplace, char *post)
 
 void work_info_print(const WorkInfo* work_info){
     if(work_info!=NULL){
-        printf("Место работы: %s\t", work_info->workplace);
+        printf("\tМесто работы: %s\t", work_info->workplace);
         printf("Должность: %s\n", work_info->post);
     }
 }

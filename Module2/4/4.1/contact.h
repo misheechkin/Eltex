@@ -2,11 +2,9 @@
 #define CONTACT_H
 
 #include "work_info.h"
-#include "social_network.h"
-#include "person.h"
+#include "input.h"
 
 #define MAX_SOCIAL_LIST 5
-
 
 typedef struct Contact
 {
@@ -20,8 +18,13 @@ typedef struct Contact
 
 void contact_init(Contact *contact, Person person);
 
+void full_print_contact(const Contact *contact);
+
 void print_contact(const Contact *contact);
 
 int contact_cmp(Contact contact1, Contact contact2);
+
+void edit_contact(Contact* contact);
+
 
 #endif

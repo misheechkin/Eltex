@@ -14,4 +14,5 @@ void social_network_init(SocialNetwork *social_network, char *name, char *profil
 
 void social_network_print(const SocialNetwork* social_network);
 
+
 #endif

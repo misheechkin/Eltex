@@ -23,3 +23,5 @@ void social_network_print(const SocialNetwork* social_network){
         printf("Cсылка: %s\n", social_network->link);
     }
 }
+
+
