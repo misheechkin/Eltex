@@ -32,4 +32,13 @@ void print_contact(const Contact *contact, int length_social_list)
    
 }
 
-
+int contact_cmp(Contact contact1, Contact contact2)
+{
+    int tmp = strcmp(contact1.person.name,contact2.person.name);
+    if(tmp) 
+        return 1;
+    if(tmp==0)
+        return 0;
+    return -1;
+}
+  

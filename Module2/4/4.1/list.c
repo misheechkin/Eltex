@@ -1,188 +1,104 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include "contact.h"
+#include "list.h"
 
-typedef struct Node
+Node *insert(Node *head, Contact contact)
 {
-    Contact *value;
-    struct Node *next;
-    struct Node *prev;
-} Node;
+    Node *new_item;
+    Node *tmp = head;
+    new_item = malloc(sizeof(Node));
+    new_item->contact = contact;
 
-typedef struct List
-{
-    size_t size;
-    Node *head;
-    Node *tail;
-} List;
-
-
-List *create_list()
-{
-    List *tmp = (List *)malloc(sizeof(List));
-    tmp->size = 0;
-    tmp->head = tmp->tail = NULL;
-    return tmp;
-}
-
-void print_list(List *lst, void (*fun)(void*)) {
-	Node *tmp = lst->head;
-	while (tmp) {
-		fun(tmp->value);
-		tmp = tmp->next;
-	}
-	printf("\n");
-}
-
-void* delete(List *lst, size_t index) {
-    Node *elm = NULL;
-    void *tmp = NULL;
-    elm = get_node(lst, index);
-    if (elm == NULL) {
-        exit(EXIT_FAILURE);
+    // Вставка элемента в пустой список
+    if (head == NULL)
+    {
+        new_item->prev = new_item;
+        new_item->next = new_item;
+        head = new_item;
+        return head;
     }
-    if (elm->prev) {
-        elm->prev->next = elm->next;
-    }
-    if (elm->next) {
-        elm->next->prev = elm->prev;
-    }
-    tmp = elm->value;
-    if (!elm->prev) {
-        lst->head = elm->next;
-    }
-    if (!elm->next) {
-        lst->tail = elm->prev;
-    }
-    free(elm);
-    lst->size--;
-    return tmp;
-}
-
-void insert(List *lst, size_t index, Contact *value) {
-    Node *elm = NULL;
-    Node *ins = NULL;
-    elm = get_Node(lst, index);
-    if (elm == NULL) {
-        exit(EXIT_FAILURE);
-    }
-    ins = (Node*) malloc(sizeof(Node));
-    ins->value = value;
-    ins->prev = elm;
-    ins->next = elm->next;
-    if (elm->next) {
-        elm->next->prev = ins;
-    }
-    elm->next = ins;
-    if (!elm->prev) {
-        lst->head = elm;
-    }
-    if (!elm->next) {
-        lst->tail = elm;
-    }
-    lst->size++;
-}
-
-Node* get_node(List *lst, size_t index) {
-    Node *tmp = lst->head;
-    size_t i = 0;
-    if (index < lst->size/2) {
-        i = 0;
-        tmp = lst->head;
-        while (tmp && i < index) {
-            tmp = tmp->next;
-            i++;
+    // Вставка элемента в начало или середину списка
+    do
+    {
+        if (contact_cmp(tmp->contact,new_item->contact)>=0)
+        {
+            new_item->next = tmp;
+            new_item->prev = tmp->prev;
+            tmp->prev->next = new_item;
+            tmp->prev = new_item;
+            if (tmp == head)
+                head = new_item;
+            return head;
         }
-    } else {
-        i = lst->size - 1;
-        tmp = lst->tail;
-        while (tmp && i > index) {
-            tmp = tmp->prev;
-            i--;
-        }
-    }
-    return tmp;
+        tmp = tmp->next;
+    } while (tmp != head);
+    // Вставка элемента в конец списка
+    new_item->next = tmp;
+    new_item->prev = tmp->prev;
+    tmp->prev->next = new_item;
+    tmp->prev = new_item;
+    return head;
 }
-
-void delete_list(List **lst)
+Node *delete_contact(Node *head, Contact contact)
 {
-    Node *tmp = (*lst)->head;
-    Node *next = NULL;
-    while (tmp) {
-        next = tmp->next;
-        free(tmp);
-        tmp = next;
+    Node *tmp = head;
+    // Если пытаемся удалить элемент из пустого списка
+    if (NULL == head)
+    {
+        printf("Список пуст!\n");
+        return head;
     }
-    free(*lst);
-    (*lst) = NULL;
+    // Поиск и удаление элемента
+    do
+    {  
+        if (contact_cmp(contact,tmp->contact)==0)
+        {
+            // Если удаляется единственный элемент списка
+            if (tmp->next == tmp->prev)
+            {
+                free(tmp);
+                return NULL;
+            } // Перестраиваем связи
+            tmp->next->prev = tmp->prev;
+            tmp->prev->next = tmp->next;
+            // Если элемент удаляется из начала списка, изменяем head
+            if (tmp == head)
+                head = head->next;
+            // Удаляем найденный элемент
+            free(tmp);
+            return head;
+        }
+        tmp = tmp->next;
+    } while (tmp != head);
+    // Если элемент не найден, выводим сообщение
+    printf("В списке нет этого контакта!\n");
+    return head;
 }
 
-void pop_back(List *lst) {
-    Node *next;
-    if (lst->tail == NULL) {
-        exit(EXIT_FAILURE);
+Node *delete_list(Node *head)
+{
+    Node *tmp = head;
+    Node *item_remove;
+    if (NULL == head) {
+        return NULL;
     }
-    next = lst->tail;
-    lst->tail = lst->tail->prev;
-    if (lst->tail) {
-        lst->tail->next = NULL;
-    }
-    if (next == lst->head) {
-        lst->head = NULL;
-    }
-    free(next);
-    lst->size--;
+    do {
+        item_remove = tmp;
+        tmp = tmp->next;
+        free(item_remove);
+    } while (tmp != head);
+    return NULL;
 }
 
-void pop_front(List *lst) {
-    Node *prev;
-    if (lst->head == NULL) {
-        exit(EXIT_FAILURE);
+void print_list(Node *head)
+{
+    Node*tmp = head;
+    if (NULL == head) {
+        printf("Список пуст\n");
+        return;
     }
-    prev = lst->head;
-    lst->head = lst->head->next;
-    if (lst->head) {
-        lst->head->prev = NULL;
-    }
-    if (prev == lst->tail) {
-        lst->tail = NULL;
-    }
-    free(prev);
-    lst->size--;
-}
-
-void push_front(List *lst, Contact *value) {
-    Node *tmp = (Node*) malloc(sizeof(Node));
-    if (tmp == NULL) {
-        exit(EXIT_FAILURE);
-    }
-    tmp->value = value;
-    tmp->next = lst->head;
-    tmp->prev = NULL;
-    if (lst->head) {
-        lst->head->prev = tmp;
-    }
-    if (lst->tail == NULL) {
-        lst->tail = tmp;
-    }
-    lst->head = tmp;
-    lst->size++;
-}
-
-void push_back(List *lst, Contact *value) {
-	Node *tmp = (Node*) malloc(sizeof(Node));
-	if (tmp == NULL) {
-		exit(EXIT_FAILURE);
-	}
-	tmp->value = value;
-	tmp->next = NULL;
-	tmp->prev = lst->tail;
-	if (lst->tail) {
-		lst->tail->next = tmp;
-    }
-    if (lst->head == NULL) {
-		lst->head = tmp;
-    }
-	lst->tail = tmp;
-	lst->size++;
+    do {
+        print_contact(&(tmp->contact),5);
+        tmp = tmp->next;
+    } while (tmp != head);
+    printf("\n");
 }

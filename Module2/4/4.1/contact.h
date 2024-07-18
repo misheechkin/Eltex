@@ -22,5 +22,6 @@ void contact_init(Contact *contact, Person person, char *email, char *phone_numb
 
 void print_contact(const Contact *contact, int length_social_list);
 
+int contact_cmp(Contact contact1, Contact contact2);
 
 #endif
