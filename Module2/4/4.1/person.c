@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include "person.h"
 
@@ -15,7 +16,7 @@ void person_init(Person *person, char *name, char *surname, char *patronymic)
     }
 }
 
-void person_print(Person *person){
+void person_print(const Person *person){
      if(person!=NULL){
         printf("Имя: %s\t", person->name);
         printf("Фамилия: %s\t", person->surname);

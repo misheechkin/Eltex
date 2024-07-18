@@ -1,7 +1,7 @@
 #ifndef WORK_INFO_H
 #define WORK_INFO_H
 
-#define MAX_LENGTH_STRING 40
+#define MAX_LENGTH_STRING 50
 
 typedef struct WorkInfo
 {
@@ -11,6 +11,6 @@ typedef struct WorkInfo
 
 void work_info_init(WorkInfo *work_info, char *workplace, char *post);
 
-void work_info_print(WorkInfo* work_info);
+void work_info_print(const WorkInfo* work_info);
 
 #endif

@@ -5,8 +5,8 @@
 #include "social_network.h"
 #include "person.h"
 
-#define MAX_LENGTH_STRING 50
 #define MAX_SOCIAL_LIST 5
+
 
 typedef struct Contact
 {
@@ -18,9 +18,9 @@ typedef struct Contact
     WorkInfo work_info;
 } Contact;
 
-void contact_init(Contact *contact, Person person, char *email, char *phone_number, SocialNetwork social_network, WorkInfo work_info);
+void contact_init(Contact *contact, Person person);
 
-void print_contact(const Contact *contact, int length_social_list);
+void print_contact(const Contact *contact);
 
 int contact_cmp(Contact contact1, Contact contact2);
 

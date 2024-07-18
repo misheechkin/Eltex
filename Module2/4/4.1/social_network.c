@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "social_network.h"
 #include <string.h>
 
@@ -15,7 +16,7 @@ void social_network_init(SocialNetwork *social_network, char *name, char *profil
     }
 }
 
-void social_network_print(SocialNetwork* social_network){
+void social_network_print(const SocialNetwork* social_network){
     if(social_network!=NULL){
         printf("Название соц сети: %s\t", social_network->name);
         printf("Имя профиля: %s\t", social_network->profile_name);

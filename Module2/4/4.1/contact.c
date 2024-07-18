@@ -1,23 +1,22 @@
+#include <stdio.h>
 #include <string.h>
 #include "contact.h"
 
-void contact_init(Contact *contact, Person person, char *email, char *phone_number, SocialNetwork social_network, WorkInfo work_info)
+void contact_init(Contact *contact, Person person)
 {
     if (contact == NULL)
         return;
     contact->person = person;
-    if (email != NULL) {
-        strcpy(contact->email,email);
-    }
-    if (phone_number != NULL) {
-        strcpy(contact->phone_number,phone_number);
-    }
-    contact->social_network_list[0]=social_network;
-    contact->work_info=work_info;
-
+    memset(contact->email,0,MAX_LENGTH_STRING);
+    memset(contact->phone_number,0,MAX_LENGTH_STRING);
+    memset(contact->social_network_list,0,MAX_SOCIAL_LIST);
+    memset(contact->work_info.post,0,MAX_LENGTH_STRING);
+    memset(contact->work_info.workplace,0,MAX_LENGTH_STRING);
 }
 
-void print_contact(const Contact *contact, int length_social_list)
+
+
+void print_contact(const Contact *contact)
 {
     if (contact == NULL)
         return;
@@ -25,9 +24,6 @@ void print_contact(const Contact *contact, int length_social_list)
    person_print(&(contact->person));
    printf("Email: %s\t", contact->email);
    printf("Номер: %s\t", contact->phone_number);
-   for (int i = 0; i < length_social_list; i++) {
-    social_network_print(&(contact->social_network_list[i]));
-   }
    work_info_print(&(contact->work_info));
    
 }

@@ -12,6 +12,6 @@ typedef struct Person
 
 void person_init(Person *person, char *name, char *surname, char *patronymic);
 
-void person_print(Person *person);
+void person_print(const Person *person);
 
 #endif
