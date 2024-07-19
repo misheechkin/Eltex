@@ -7,7 +7,6 @@ int main()
 {
     Node *head = NULL;
     int tmp = 0;
-    Contact* contact2;
     for (;;)
     {
         printf("\n1 - Добавить контакт\t2 - Вывести список контактов\n3 - Удалить контакт\t4 - Редактировать контакт\n5 - Вывести дополнительную информацию о контакте\n6 - Выйти из телефоной книги\n");
@@ -29,8 +28,8 @@ int main()
             edit_contact(find_contact(head,input_id()));
             break;
         case 5:
-           contact2  = find_contact(head,input_id());
-            full_print_contact(contact2);
+            Contact* current_contact = find_contact(head,input_id());
+            full_print_contact(current_contact);
             break;
         case 6:
             head = delete_list(head);
