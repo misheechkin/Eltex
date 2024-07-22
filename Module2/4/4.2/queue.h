@@ -1,3 +1,6 @@
+#ifndef QUEUE_H
+#define QUEUE_H
+
 #include <stdint.h>
 
 #define MAX_LENGTH 30
@@ -29,3 +32,5 @@ void dequeue_priority_lower(Queue *queue,uint8_t priority);
 void print_queue(Queue *queue);
 
 void dequeue(Queue *queue);
+
+#endif
