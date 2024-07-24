@@ -27,7 +27,17 @@ int main(){
             args[i] = arg;
             arg = strtok(NULL," ");
         }
-      
+        pid_t pid;
+        switch (pid = fork()) {
+        case -1:
+            perror("fork");
+            exit(EXIT_FAILURE);
+        case 0:
+            execv(args[0],args);
+            puts("Этого файла не существует");
+            exit(EXIT_FAILURE);
+        }
+        wait(NULL);
     }
     exit(EXIT_SUCCESS);
 }
