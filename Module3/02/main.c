@@ -11,23 +11,30 @@
 
 int main(){
     char input_string[MAX_LENGTH_STRING]={0};
+
     for(;;) {
         printf(">> ");
+
         if (fgets(input_string, MAX_LENGTH_STRING, stdin) != NULL) {
             if (input_string[strlen(input_string) - 1] == '\n') {
                 input_string[strlen(input_string) - 1] = '\0';
             }
         }
+        
         if (strcmp(input_string, "q") == 0) {
             break;
         }
+
         char *arg = strtok(input_string," ");
         char *args[MAX_AMOUNT_ARGS]={NULL};
+
         for(int i = 0; i < MAX_AMOUNT_ARGS && arg!=NULL; i++) {
             args[i] = arg;
             arg = strtok(NULL," ");
         }
+
         pid_t pid;
+    
         switch (pid = fork()) {
         case -1:
             perror("fork");
