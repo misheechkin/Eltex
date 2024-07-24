@@ -7,6 +7,6 @@ int main()
     char string[100];
     printf("Введите строку: ");
     scanf("%s",string);
-    printf("Количество символов: %d",strlen(string));
+    printf("Количество символов: %d\n",strlen(string));
     exit(EXIT_SUCCESS);
 }
