@@ -13,12 +13,15 @@ int main(int argc, char *argv[])
         printf("Не правильно введены аргументы, введите: <длина стороны квадрата> ... ...\n");
         exit(EXIT_FAILURE);
     }
+
     int side_lengths[argc-1];
     for (int i = 0; i < argc - 1; i++) {
         side_lengths[i] = atoi(argv[i+1]);
     }
+
     int half = sizeof(side_lengths)/sizeof(*side_lengths)/2;
     pid_t pid;
+
     switch (pid = fork()) {
     case -1:
         perror("fork");
@@ -36,5 +39,6 @@ int main(int argc, char *argv[])
         }
         break;
     }
+    
     exit(EXIT_SUCCESS);
 }
