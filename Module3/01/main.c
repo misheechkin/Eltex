@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 
 int calculate_square(int length) {
@@ -33,6 +34,7 @@ int main(int argc, char *argv[])
         }
         break;
     default:
+        wait(NULL);
         printf("Процесс-родитель: \n");
         for(int i = half; i < sizeof(side_lengths)/sizeof(*side_lengths); i++) {
             printf("Площадь квадрата №%d: %d\n", i+1, calculate_square(side_lengths[i]));
