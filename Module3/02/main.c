@@ -26,13 +26,14 @@ int main(){
         }
 
         char *arg = strtok(input_string," ");
-        char *args[MAX_AMOUNT_ARGS]={NULL};
-
-        for(int i = 0; i < MAX_AMOUNT_ARGS && arg!=NULL; i++) {
+        char *args[MAX_AMOUNT_ARGS];
+        int i = 0;
+        while( i < MAX_AMOUNT_ARGS && arg!=NULL) {
             args[i] = arg;
             arg = strtok(NULL," ");
+             i++;
         }
-
+        args[i]=NULL;
         pid_t pid;
     
         switch (pid = fork()) {
