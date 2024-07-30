@@ -31,7 +31,33 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     case 0:
         close(fd[0]);
-       
+    
+        srand(time(NULL));
+        int number = 0;
+        int number_of_digits = 0;
+        for (int i = 0; i < amount; i++)
+        {
+            number = rand();
+            if (write(fd[1],&number,sizeof(number)) < 0)
+            {
+                perror("write");
+                close(fd[1]);
+                exit(EXIT_FAILURE);
+            }
+            sleep(3);
+            while(wait);
+            FILE* fdtxt1;
+            if((fdtxt1 = fopen("numbers.txt", "r")) == NULL)
+            {
+                printf("Не удалось открыть файл");
+                exit(EXIT_FAILURE);   
+            }
+            fseek(fdtxt1,number_of_digits,SEEK_SET);
+            while(fscanf(fdtxt1,"%d",&number) != EOF)
+                printf("%d\n",number);
+            fclose(fdtxt1);
+            number_of_digits += count_numbers(number)+1;
+        }
         close(fd[1]);
        break;
     default:
