@@ -5,6 +5,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <signal.h>
+#include <unistd.h>
 #include "message.h"
 
 void signal_handler(int sig){
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]){
         }
         break;
     default:
-      message_buf send_message;
+        message_buf send_message;
         message_buf receive_message;
         while (1) {
             if(msgrcv(msqid,&receive_message,SIZE_MESSAGE,MSG_TYPE_IDENTIFICATION,0) < 0) {
