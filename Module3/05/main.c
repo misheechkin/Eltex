@@ -7,7 +7,37 @@
 #include <signal.h>
 
 
+int wait = 1;
 
+void signal_handler(int sig){
+    switch (sig)
+    {
+    case SIGUSR1:
+        wait = 1;
+        break;
+    case SIGUSR2:
+       wait = 0;
+        break;
+    default:
+        break;
+    }
+}
+
+int count_numbers(int n)
+{
+    int numbers;
+    if (n/10==0)
+      return 1;
+    else
+    {
+        while (n>0) 
+        {  
+            n=n/10;
+            numbers+=1;
+        }
+        return numbers;
+    }     
+}
  
 
 int main(int argc, char *argv[]){
@@ -31,7 +61,8 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     case 0:
         close(fd[0]);
-    
+        signal(SIGUSR1,signal_handler);
+        signal(SIGUSR2,signal_handler);
         srand(time(NULL));
         int number = 0;
         int number_of_digits = 0;
