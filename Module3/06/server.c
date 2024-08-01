@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
                     msgctl(msqid, IPC_RMID, 0);
                     exit(EXIT_FAILURE);
                 }
-
+        
                 while(1)
                 {
                     if(msgrcv(msqid,&receive_message_parent,SIZE_MESSAGE,MSG_TYPE_PROCESS,IPC_NOWAIT) > 0) {
