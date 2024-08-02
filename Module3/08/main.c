@@ -6,8 +6,8 @@
 #include <time.h>
 #include <sys/sem.h>
 
-#define SEM_NAME_1 "/my_sem1"
-#define SEM_NAME_2 "/my_sem2"
+
+#define PATHNAME "./main.c"
 
 int count_numbers(int n)
 {
@@ -33,18 +33,16 @@ int main(int argc, char *argv[]){
     }
     int amount = atoi(argv[1]);
     int fd[2];
-
     key_t key;
     int semid;
-    if((key = ftok("./main.c", 'E'))== -1){
+    if((key = ftok(PATHNAME, 'E'))== -1){
         perror("ftok");
         exit(EXIT_FAILURE);
     }
-    if((semid = semget(key, 10, 0666 | IPC_CREAT))== -1){
-        perror("ftok");
+    if((semid = semget(key, 1, 0666 | IPC_CREAT))== -1){
+        perror("semget");
         exit(EXIT_FAILURE);
     }
-
 
     if (pipe(fd) == -1) {
         perror("pipe");
@@ -71,11 +69,12 @@ int main(int argc, char *argv[]){
                 close(fd[1]);
                 exit(EXIT_FAILURE);
             }
-            // if(sem_wait(semaphore1) != 0)
-            // {
-            //     perror("sem_close");
-            //     exit(EXIT_FAILURE);
-            // }
+            struct sembuf sb = {0, -1, 0};
+            if (semop(semid, &sb, 1) == -1) 
+            {
+                perror("semop");
+                exit(EXIT_FAILURE);
+            }
            
             FILE* fdtxt1;
             if((fdtxt1 = fopen("numbers.txt", "r")) == NULL)
@@ -89,13 +88,7 @@ int main(int argc, char *argv[]){
             fclose(fdtxt1);
             number_of_digits += count_numbers(number)+1;
         }
-        // sem_close(semaphore1);
         close(fd[1]);
-        // if(sem_unlink(SEM_NAME_1) != 0)
-        // {
-        //     perror("sem_unlink");
-        //     exit(EXIT_FAILURE);
-        // }
        break;
     default:
         close(fd[1]);
@@ -105,12 +98,6 @@ int main(int argc, char *argv[]){
         char mode[2];
         while ((res = read(fd[0],&number2,sizeof(number))) != 0)
         {
-            // if(sem_wait(semaphore2)!= 0)
-            // {
-            //     perror("sem_close");
-            //     exit(EXIT_FAILURE);
-            // }
-           
             if(res < 0)
             {
                 perror("read");
@@ -137,33 +124,21 @@ int main(int argc, char *argv[]){
             }   
             fprintf(fdtxt, "%d\n", number2);
             fclose(fdtxt); 
-            // if (sem_post(semaphore1) != 0){
-            //     perror("sem_post");
-            //     exit(EXIT_FAILURE);
-            // }   
-            // if (sem_post(semaphore2)!= 0){
-            //     perror("sem_post");
-            //     exit(EXIT_FAILURE);
-            // }
+            struct sembuf sb = {0, 1, 0};
+            if (semop(semid, &sb, 1) == -1) 
+            {
+                perror("semop");
+                exit(EXIT_FAILURE);
+            }
         }
-        // if(sem_close(semaphore1)!= 0)
-        // {
-        //     perror("sem_close");
-        //     exit(EXIT_FAILURE);
-        // }
-        // if(sem_close(semaphore2) != 0)
-        // {
-        //     perror("sem_close");
-        //     exit(EXIT_FAILURE);
-        // }
-        // if(sem_unlink(SEM_NAME_2) != 0)
-        // {
-        //     perror("sem_unlink1");
-        //     exit(EXIT_FAILURE);
-        // }
-        // close(fd[0]);
+        close(fd[0]);
+        if (semctl(semid, 0, IPC_RMID, 0) == -1) {
+            perror("semctl");
+            exit(EXIT_FAILURE);
+        }
         break;
     }
+    
     exit(EXIT_SUCCESS);
 }
 
