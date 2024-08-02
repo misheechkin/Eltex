@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     int amount = atoi(argv[1]);
-
+    
     if ((semaphore1 = sem_open(SEM_NAME_1, 0)) == SEM_FAILED ||
         (semaphore2 = sem_open(SEM_NAME_2, 0)) == SEM_FAILED)
     {
@@ -76,7 +76,23 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
 
-       
+        if (tmp)
+        {
+            if (sem_wait(semaphore2) != 0)
+            {
+                perror("sem_wait");
+                free_resources();
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        if (sem_wait(semaphore1) != 0)
+        {
+            perror("sem_wait");
+            free_resources();
+            exit(EXIT_FAILURE);
+        }
+
         tmp = 1;
         FILE *fdtxt1;
         

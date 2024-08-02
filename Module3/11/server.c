@@ -100,7 +100,50 @@ int main(int argc, char *argv[])
             free_resources();
             exit(EXIT_FAILURE);
         }
-       
+        if (sem_getvalue(semaphore1, &size_sem) == 1)
+        {
+            perror("sem_getvalue");
+            free_resources();
+            exit(EXIT_FAILURE);
+        }
+        int size_sem2 = size_sem;
+
+        while (1)
+        {
+            if (size_sem == 0)
+            {
+                break;
+            }
+            int tmp = size_sem - 1;
+            if (sem_wait(semaphore1) != 0)
+            {
+                perror("sem_close");
+                free_resources();
+                exit(EXIT_FAILURE);
+            }
+            if (sem_getvalue(semaphore1, &size_sem) == 1)
+            {
+                perror("sem_getvalue");
+                free_resources();
+                exit(EXIT_FAILURE);
+            }
+            if (tmp != size_sem)
+            {
+                size_sem2--;
+            }
+        }
+        if (temp != 1)
+        {
+            for (size_t i = 0; i < AMOUNT_READERS - size_sem2; i++)
+            {
+                if (sem_post(semaphore2) != 0)
+                {
+                    perror("sem_close");
+                    free_resources();
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
         if (temp)
         {
             mode[0] = 'w';
