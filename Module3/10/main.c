@@ -6,8 +6,8 @@
 #include <time.h>
 #include <semaphore.h>
 
-#define SEM_NAME_1 "/my_sem1"
-#define SEM_NAME_2 "/my_sem2"
+#define SEM_NAME "/my_sem"
+
 
 int count_numbers(int n)
 {
@@ -33,15 +33,8 @@ int main(int argc, char *argv[]){
     }
     int amount = atoi(argv[1]);
     int fd[2];
-    sem_t* semaphore1;
-    sem_t* semaphore2;
-    
-    if((semaphore1 = sem_open(SEM_NAME_1,O_CREAT,0600,0)) == SEM_FAILED)
-    {
-        perror("sem_open");
-        exit(EXIT_FAILURE);
-    }
-    if((semaphore2 = sem_open(SEM_NAME_2,O_CREAT,0600,1)) == SEM_FAILED)
+    sem_t* semaphore;
+    if((semaphore = sem_open(SEM_NAME,O_CREAT,0600,0)) == SEM_FAILED)
     {
         perror("sem_open");
         exit(EXIT_FAILURE);
@@ -71,12 +64,11 @@ int main(int argc, char *argv[]){
                 close(fd[1]);
                 exit(EXIT_FAILURE);
             }
-            if(sem_wait(semaphore1) != 0)
+            if(sem_wait(semaphore) != 0)
             {
                 perror("sem_close");
                 exit(EXIT_FAILURE);
             }
-           
             FILE* fdtxt1;
             if((fdtxt1 = fopen("numbers.txt", "r")) == NULL)
             {
@@ -89,9 +81,13 @@ int main(int argc, char *argv[]){
             fclose(fdtxt1);
             number_of_digits += count_numbers(number)+1;
         }
-        sem_close(semaphore1);
+        if(sem_close(semaphore)!= 0)
+        {
+            perror("sem_close");
+            exit(EXIT_FAILURE);
+        }
         close(fd[1]);
-        if(sem_unlink(SEM_NAME_1) != 0)
+        if(sem_unlink(SEM_NAME) != 0)
         {
             perror("sem_unlink");
             exit(EXIT_FAILURE);
@@ -105,12 +101,6 @@ int main(int argc, char *argv[]){
         char mode[2];
         while ((res = read(fd[0],&number2,sizeof(number))) != 0)
         {
-            if(sem_wait(semaphore2)!= 0)
-            {
-                perror("sem_close");
-                exit(EXIT_FAILURE);
-            }
-           
             if(res < 0)
             {
                 perror("read");
@@ -137,28 +127,14 @@ int main(int argc, char *argv[]){
             }   
             fprintf(fdtxt, "%d\n", number2);
             fclose(fdtxt); 
-            if (sem_post(semaphore1) != 0){
+            if (sem_post(semaphore) != 0){
                 perror("sem_post");
                 exit(EXIT_FAILURE);
             }   
-            if (sem_post(semaphore2)!= 0){
-                perror("sem_post");
-                exit(EXIT_FAILURE);
-            }
         }
-        if(sem_close(semaphore1)!= 0)
+        if(sem_close(semaphore)!= 0)
         {
             perror("sem_close");
-            exit(EXIT_FAILURE);
-        }
-        if(sem_close(semaphore2) != 0)
-        {
-            perror("sem_close");
-            exit(EXIT_FAILURE);
-        }
-        if(sem_unlink(SEM_NAME_2) != 0)
-        {
-            perror("sem_unlink1");
             exit(EXIT_FAILURE);
         }
         close(fd[0]);
