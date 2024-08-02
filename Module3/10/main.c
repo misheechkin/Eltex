@@ -24,6 +24,7 @@ int count_numbers(int n)
         return numbers;
     }     
 }
+ 
 
 int main(int argc, char *argv[]){
     if (argc == 1 || argc > 2) {
