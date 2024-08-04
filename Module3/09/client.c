@@ -43,7 +43,28 @@ int main(int argc, char *argv[]) {
             perror("write");
             exit(EXIT_FAILURE);
         }
+        struct sembuf sb[2] = {
+            {0, -1, 0},
+            {1, -1, 0}};
+        if (semop(semid, sb, 2) == -1) {
+            perror("semop");
+            exit(EXIT_FAILURE);
         }
+        FILE *fdtxt1;
+        if ((fdtxt1 = fopen("numbers.txt", "r")) == NULL) {
+            perror("fopen");
+            exit(EXIT_FAILURE);
+        }
+        while (fscanf(fdtxt1, "%d", &number) != EOF)
+            printf("%d\n", number);
+        fclose(fdtxt1);
+        puts("----------------------------");
+        struct sembuf sb2 = {1, 1, 0};
+        if (semop(semid, &sb2, 1) == -1) {
+            perror("semop");
+            exit(EXIT_FAILURE);
+        }
+    }
 
     if (close(fd) != 0) {
         perror("close");

@@ -75,7 +75,41 @@ int main(int argc, char *argv[]) {
             perror("read");
             exit(EXIT_FAILURE);
         }
+        struct sembuf sb[2] = {
+            {0, 0, 0},
+            {1, -3, 0}};
+        if (semop(semid, sb, 2) == -1) {
+            perror("semop");
+            exit(EXIT_FAILURE);
         }
+        struct sembuf sb3 = {1, 3, 0};
+        if (semop(semid, &sb3, 1) == -1) {
+            perror("semop");
+            exit(EXIT_FAILURE);
+        }
+
+        if (temp) {
+            mode[0] = 'w';
+            mode[1] = '\0';
+            temp = 0;
+        } else {
+            mode[0] = 'a';
+            mode[1] = '\0';
+        }
+
+        FILE *fdtxt;
+        if ((fdtxt = fopen("numbers.txt", mode)) == NULL) {
+            perror("fopen");
+            exit(EXIT_FAILURE);
+        }
+        fprintf(fdtxt, "%d\n", number);
+        fclose(fdtxt);
+        struct sembuf sb2 = {0, 1, 0};
+        if (semop(semid, &sb2, 1) == -1) {
+            perror("semop");
+            exit(EXIT_FAILURE);
+        }
+    }
 
     if (close(fd) != 0) {
         perror("close");
