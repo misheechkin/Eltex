@@ -10,7 +10,7 @@
 int main() {
     int shmid;
     int* shmp;
-
+    int flag = 0;
     if ((shmid = shmget(IPC_PRIVATE, MAX_LEN * sizeof(int), IPC_CREAT | 0666)) == -1) {
         perror("shmid");
         exit(EXIT_FAILURE);
@@ -21,18 +21,40 @@ int main() {
     }
 
     pid_t pid = fork();
-    switch (pid) {
-        case -1:
-            perror("fork");
-            exit(EXIT_FAILURE);
-        case 0:
-            exit(EXIT_SUCCESS);
-        default:
-            srand(getppid());
-            int count = rand() * MAX_LEN + 1;
-            for (int i = 0; i < count; i++) {
-                shmp[i] = rand() % 100;
-                printf("%d ", shmp[i]);
+    if (pid == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+    if (pid == 0) {
+        while (flag) {
+            int min = shmp[0];
+            int max = shmp[0];
+            for (size_t i = 0; i < MAX_LEN || shmp[i] == -1; i++) {
+                if (shmp[i] > max) {
+                    max = shmp[i];
+                }
+                if (shmp[i] < min) {
+                    min = shmp[i];
+                }
             }
+            shmp[0] = min;
+            shmp[1] = max;
+        }
+        if (shmdt(shmp) == -1) {
+            perror("shmdt");
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        srand(getppid());
+        while (flag) {
+            int count = rand() % MAX_LEN + 1;
+            int i = 0;
+            while (i < count) {
+                shmp[i] = rand() % 100;
+                i++;
+            }
+            shmp[i] = -1;
+            printf("Минимальное число: %d\n Максимальное число: %d\n", shmp[0], shmp[1]);
+        }
     }
 }
