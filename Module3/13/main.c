@@ -54,7 +54,32 @@ int main(int argc, char* argv[]) {
     }
 
     if (pid == 0) {
-        } else {
+        while (flag) {
+            if (sem_wait(semaphore1) != 0) {
+                perror("sem_wait");
+                exit(EXIT_FAILURE);
+            }
+
+            int min = shmp[0];
+            int max = shmp[0];
+            int count = shmp[MAX_LEN];
+            for (size_t i = 0; i < count; i++) {
+                if (shmp[i] > max) {
+                    max = shmp[i];
+                }
+                if (shmp[i] < min) {
+                    min = shmp[i];
+                }
+            }
+            shmp[0] = min;
+            shmp[1] = max;
+            if (sem_post(semaphore2) != 0) {
+                perror("sem_post");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+    } else {
         while (flag) {
             sleep(1);
             srand(time(NULL));
