@@ -47,7 +47,44 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-      if (sem_close(semaphore1) != 0 || sem_close(semaphore2) != 0) {
+    pid_t pid = fork();
+    if (pid == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid == 0) {
+        } else {
+        while (flag) {
+            sleep(1);
+            srand(time(NULL));
+            int count = rand() % MAX_LEN;
+            int i = 0;
+
+            while (i < count) {
+                shmp[i] = rand() % 1000;
+                i++;
+            }
+            shmp[MAX_LEN] = count;
+
+            if (sem_post(semaphore1) != 0) {
+                perror("sem_post");
+                exit(EXIT_FAILURE);
+            }
+            if (sem_wait(semaphore2) != 0) {
+                perror("sem_close");
+                exit(EXIT_FAILURE);
+            }
+
+            printf("Минимальное число: %d\nМаксимальное число: %d\n", shmp[0], shmp[1]);
+        }
+
+        if (sem_unlink("my_sem1") != 0 || sem_unlink("my_sem2") != 0) {
+            perror("sem_unlink");
+            exit(EXIT_FAILURE);
+        }
+    }
+    if (sem_close(semaphore1) != 0 || sem_close(semaphore2) != 0) {
         perror("sem_close");
         exit(EXIT_FAILURE);
     }
