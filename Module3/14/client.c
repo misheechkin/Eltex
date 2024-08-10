@@ -31,6 +31,31 @@ int main(int argc, char* argv[]) {
         close(sockfd);
         exit(EXIT_FAILURE);
     }
+    while (1) {
+        printf(">");
+        if (fgets(message, MAX_MSG_SIZE, stdin) != NULL) {
+            if (message[strlen(message) - 1] == '\n') {
+                message[strlen(message) - 1] = '\0';
+            }
+        }
+        if (strcmp(message, "q") == 0) {
+            break;
+        }
+        if (sendto(sockfd, message, strlen(message) + 1, MSG_DONTROUTE, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+            perror("sendto");
+            close(sockfd);
+            exit(EXIT_FAILURE);
+        }
+        if (recvfrom(sockfd, message, MAX_MSG_SIZE, 0, NULL, NULL) < 0) {
+            if (errno == EAGAIN) {
+                break;
+            }
+            perror("recvfrom");
+            close(sockfd);
+            exit(EXIT_FAILURE);
+        }
+        printf("%s\n", message);
+    }
 
     close(sockfd);
     exit(EXIT_SUCCESS);
