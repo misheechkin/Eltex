@@ -69,4 +69,94 @@ int main(int argc, char *argv[]) {
         close(sockfd);
         exit(EXIT_FAILURE);
     }
+    if (listen(sockfd, 5) < 0) {
+        perror("listen");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
+    socklen_t clilen = sizeof(client_addr);
+    for (;;) {
+        if ((newsockfd = accept(sockfd, (struct sockaddr *)&client_addr, &clilen)) < 0) {
+            perror("accept");
+            close(sockfd);
+            exit(EXIT_FAILURE);
+        }
+        nclients++;
+        printf("IP %s подключился!\n", inet_ntoa(client_addr.sin_addr));
+        printusers();
+        pid = fork();
+        if (pid < 0) {
+            perror("fork");
+            close(sockfd);
+            close(newsockfd);
+            exit(EXIT_FAILURE);
+        }
+        if (pid == 0) {
+            close(sockfd);
+            calculate(newsockfd);
+            close(newsockfd);
+            nclients--;
+            exit(EXIT_SUCCESS);
+        } else
+            close(newsockfd);
+    }
+    close(sockfd);
+    exit(EXIT_SUCCESS);
+}
+
+void calculate(int newsockfd) {
+    Operation operation[] = {
+        {"+", sum},
+        {"/", division},
+        {"*", multiplication},
+        {"-", subtraction},
+    };
+    double a, b, result;
+    char buff[MAX_MSG_SIZE];
+    for (;;) {
+        strcpy(buff, "Введите пример (в формате <число><операция><число>)\n");
+        if (write(newsockfd, buff, strlen(buff) + 1) < 0) {
+            perror("write");
+            close(newsockfd);
+            exit(EXIT_FAILURE);
+        }
+        if (read(newsockfd, buff, sizeof(buff)) < 1) {
+            perror("read");
+            close(newsockfd);
+            exit(EXIT_FAILURE);
+        }
+        char temp[2];
+        if (sscanf(buff, "%lf %s %lf", &a, temp, &b) < 3) {
+            if (strcmp(temp, "q") == 0) {
+                return;
+            }
+            strcpy(buff, "Неправильно введенны даннные\n");
+            if (write(newsockfd, buff, strlen(buff) + 1) < 0) {
+                perror("write");
+                close(newsockfd);
+                exit(EXIT_FAILURE);
+            }
+            continue;
+        }
+        for (size_t i = 0; i < sizeof(operation) / sizeof(*operation); i++) {
+            if (strcmp(temp, operation[i].name) == 0) {
+                result = operation[i].func(a, b);
+                if (result == 0 && strcmp(operation[i].name, "/")) {
+                    strcpy(buff, "На ноль делить нельзя\n");
+                    if (write(newsockfd, buff, strlen(buff) + 1) < 0) {
+                        perror("write");
+                        close(newsockfd);
+                        exit(EXIT_FAILURE);
+                    }
+                    continue;
+                }
+            }
+        }
+        snprintf(buff, sizeof(buff), "%.2lf", result);
+        if (write(newsockfd, buff, strlen(buff) + 1) < 0) {
+            perror("write");
+            close(newsockfd);
+            exit(EXIT_FAILURE);
+        }
+    }
 }
