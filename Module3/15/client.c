@@ -10,27 +10,25 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define MAX_MSG_SIZE 500
+#define MAX_MSG_SIZE 1024
 #define PORT 1510
 
-int flag = 1;
+int sockfd;
 
 void* recv_message(void* arg) {
-    char message[MAX_MSG_SIZE];
-    int* sockfd = (int*)arg;
-    while (flag) {
-        if (recv(*sockfd, message, sizeof(message), 0) < 0) {
+    char message2[MAX_MSG_SIZE];
+    for (;;) {
+        if (read(sockfd, message2, sizeof(message2)) < 1) {
             perror("recv");
-            close(*sockfd);
+            close(sockfd);
             exit(EXIT_FAILURE);
         }
-        printf("\nS=>C:%s\n", message);
+        printf("\nS=>C: %s\n", message2);
     }
     pthread_exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char* argv[]) {
-    int sockfd;
     pthread_t tid;
     struct sockaddr_in server_addr;
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -50,7 +48,7 @@ int main(int argc, char* argv[]) {
         close(sockfd);
         exit(EXIT_FAILURE);
     }
-    if (pthread_create(&tid, NULL, recv_message, (void*)&sockfd) < 0) {
+    if (pthread_create(&tid, NULL, recv_message, NULL) < 0) {
         perror("pthread_create");
         close(sockfd);
         exit(EXIT_FAILURE);
@@ -64,8 +62,11 @@ int main(int argc, char* argv[]) {
         }
 
         if (!strcmp(message, "q")) {
-            printf("Выход..");
-            flag = 0;
+            printf("Выход..\n");
+            if (pthread_cancel(tid) != 0) {
+                perror("pthread_cancel");
+                exit(EXIT_FAILURE);
+            }
             break;
         }
 
@@ -77,7 +78,6 @@ int main(int argc, char* argv[]) {
     }
     if (pthread_join(tid, NULL) != 0) {
         perror("pthread_join");
-        close(sockfd);
         exit(EXIT_FAILURE);
     }
     close(sockfd);
