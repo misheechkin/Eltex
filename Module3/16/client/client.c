@@ -60,6 +60,49 @@ int main(int argc, char* argv[]) {
     exit(EXIT_SUCCESS);
 }
 
+void send_file() {
+    char path[100];
+    puts("Введите путь к файлу");
+    scanf("%s", path);
+    FILE* f;
+    if ((f = fopen(path, "rb")) == NULL) {
+        perror("fopen");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
+    if (send(sockfd, path, strlen(path) + 1, 0) < 0) {
+        perror("send");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
+    long long file_size = get_file_size(f);
+    printf("Размер файла: %lld\n", file_size);
+    int size = 50000;
+    char* file_fragment = malloc(size);
+    int fragment_size;
+    int send_bytes = 0;
+    long long total_send = 0;
+    int progress;
+    for (;;) {
+        fragment_size = fread(file_fragment, 1, size, f);
+        if (fragment_size == 0)
+            break;
+        if ((send_bytes = send(sockfd, file_fragment, fragment_size, 0)) < 0) {
+            perror("send");
+            close(sockfd);
+            exit(EXIT_FAILURE);
+        }
+        total_send += send_bytes;
+        progress = (int)(double)total_send / file_size * 100;
+        printf("\rПрогресс: %d%%", progress);
+    }
+    printf("\n");
+    fclose(f);
+    free(file_fragment);
+    close(sockfd);
+    return;
+}
+
 void calculate() {
     pthread_t tid;
     if (pthread_create(&tid, NULL, recv_message, NULL) < 0) {
