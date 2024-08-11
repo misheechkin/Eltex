@@ -14,29 +14,12 @@
 #define PORT 1510
 
 int sockfd;
-
-int get_file_size(FILE* f) {
-    fseek(f, 0, SEEK_END);
-    int size = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    return size;
-}
-
-void* recv_message(void* arg) {
-    char message2[MAX_MSG_SIZE];
-    for (;;) {
-        if (read(sockfd, message2, sizeof(message2)) < 1) {
-            perror("recv");
-            close(sockfd);
-            exit(EXIT_FAILURE);
-        }
-        printf("\nS=>C: %s\n", message2);
-    }
-    pthread_exit(EXIT_SUCCESS);
-}
+void send_file();
+void calculate();
+void* recv_message(void* arg);
+long long get_file_size(FILE* f);
 
 int main(int argc, char* argv[]) {
-    pthread_t tid;
     struct sockaddr_in server_addr;
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("sockfd");
@@ -55,6 +38,30 @@ int main(int argc, char* argv[]) {
         close(sockfd);
         exit(EXIT_FAILURE);
     }
+    int choice;
+    printf("1.Отправить файл серверу\n2.Отправить пример для расчета серверу\n");
+    scanf("%d", &choice);
+    if (send(sockfd, &choice, sizeof(choice), 0) < 0) {
+        perror("send");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
+    switch (choice) {
+        case 1:
+            send_file();
+            break;
+        case 2:
+            calculate();
+            break;
+        default:
+            close(sockfd);
+            break;
+    }
+    exit(EXIT_SUCCESS);
+}
+
+void calculate() {
+    pthread_t tid;
     if (pthread_create(&tid, NULL, recv_message, NULL) < 0) {
         perror("pthread_create");
         close(sockfd);
@@ -88,5 +95,24 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
     close(sockfd);
-    exit(EXIT_SUCCESS);
+}
+
+long long get_file_size(FILE* f) {
+    fseek(f, 0, SEEK_END);
+    long long size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    return size;
+}
+
+void* recv_message(void* arg) {
+    char message2[MAX_MSG_SIZE];
+    for (;;) {
+        if (read(sockfd, message2, sizeof(message2)) < 1) {
+            perror("recv");
+            close(sockfd);
+            exit(EXIT_FAILURE);
+        }
+        printf("\nS=>C: %s\n", message2);
+    }
+    pthread_exit(EXIT_SUCCESS);
 }
