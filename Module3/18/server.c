@@ -14,7 +14,7 @@
 #define MAX_MSG_SIZE 1024
 #define PORT 1510
 
-void calculate(char *buff, int newsockfd);
+int calculate(char *buff, int newsockfd);
 
 double sum(double a, double b) {
     return a + b;
@@ -32,6 +32,14 @@ double multiplication(double a, double b) {
 
 double subtraction(double a, double b) {
     return a - b;
+}
+
+void close_sock(fd_set fds, int max_fd) {
+    for (size_t i = 3; i <= max_fd + 1; i++) {
+        if (FD_ISSET(i, &fds)) {
+            close(i);
+        }
+    }
 }
 
 typedef struct
@@ -79,11 +87,65 @@ int main(int argc, char *argv[]) {
     socklen_t clilen = sizeof(client_addr);
 
     for (;;) {
+        delay.tv_sec = 60;
+        delay.tv_usec = 0;
+        read_fds = fds;
+        if ((sel_fds = select(max_fd + 1, &read_fds, 0, 0, &delay)) < 0) {
+            perror("select");
+            close(sockfd);
+            exit(EXIT_FAILURE);
         }
+        if (sel_fds == 0) {
+            close_sock(fds, max_fd);
+            break;
+        }
+        for (size_t i = 3; i <= max_fd; i++) {
+            if (FD_ISSET(i, &read_fds)) {
+                if (i == sockfd) {
+                    if ((newsockfd = accept(sockfd, (struct sockaddr *)&client_addr, &clilen)) < 0) {
+                        perror("accept");
+                        close(sockfd);
+                        exit(EXIT_FAILURE);
+                    }
+                    FD_SET(newsockfd, &fds);
+                    max_fd = (newsockfd > max_fd) ? newsockfd : max_fd;
+                    printf("IP %s подключился!\n", inet_ntoa(client_addr.sin_addr));
+                    strncpy(buff, "Введите пример (в формате <число> <операция> <число>)\n", MAX_MSG_SIZE);
+                    if (write(newsockfd, buff, strlen(buff) + 1) < 0) {
+                        perror("write");
+                        close(newsockfd);
+                        exit(EXIT_FAILURE);
+                    }
+                } else {
+                    if ((res = read(i, buff, sizeof(buff))) < 1) {
+                        if (res == 0) {
+                            FD_CLR(i, &fds);
+                            close(i);
+                            continue;
+                        }
+                        perror("read");
+                        close_sock(fds, max_fd);
+                        exit(EXIT_FAILURE);
+                    }
+                    if (calculate(buff, i) == EXIT_FAILURE) {
+                        close_sock(fds, max_fd);
+                        exit(EXIT_FAILURE);
+                    }
+                    sleep(1);
+                    strncpy(buff, "Введите пример (в формате <число> <операция> <число>)\n", MAX_MSG_SIZE);
+                    if (write(i, buff, strlen(buff) + 1) < 0) {
+                        perror("write");
+                        close_sock(fds, max_fd);
+                        exit(EXIT_FAILURE);
+                    }
+                }
+            }
+        }
+    }
     exit(EXIT_SUCCESS);
 }
 
-void calculate(char *buff, int newsockfd) {
+int calculate(char *buff, int newsockfd) {
     Operation operation[] = {
         {"+", sum},
         {"/", division},
@@ -98,9 +160,9 @@ void calculate(char *buff, int newsockfd) {
         if (write(newsockfd, buff, strlen(buff) + 1) < 0) {
             perror("write");
             close(newsockfd);
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
-        return;
+        return EXIT_SUCCESS;
     }
     int i = 0;
     while (i < sizeof(operation) / sizeof(operation[0])) {
@@ -116,15 +178,15 @@ void calculate(char *buff, int newsockfd) {
         if (write(newsockfd, buff, strlen(buff) + 1) < 0) {
             perror("write");
             close(newsockfd);
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
-        return;
+        return EXIT_SUCCESS;
     }
     snprintf(buff, sizeof(buff), "%.2lf", result);
     if (write(newsockfd, buff, strlen(buff) + 1) < 0) {
         perror("write");
         close(newsockfd);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
-    return;
+    return EXIT_SUCCESS;
 }
